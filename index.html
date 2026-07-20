@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Truco de las 27 Cartas 🔮</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e24;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #ffbc42; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2a2a35;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        button {
+            background-color: #ffbc42;
+            color: #1e1e24;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #e0a334; }
+        
+        .columns-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .column {
+            background: #3b3b4f;
+            border: 2px solid #575775;
+            border-radius: 8px;
+            width: 30%;
+            min-width: 220px;
+            padding: 15px 5px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .column:hover {
+            border-color: #ffbc42;
+            background: #45455e;
+        }
+        
+        /* Contenedor único para las 27 cartas */
+        .deck-grid {
+            background: #1e1e24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px auto;
+            max-width: 780px;
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 12px;
+            justify-items: center;
+        }
+
+        /* DISEÑO DE CARTAS UNIFICADO */
+        .card {
+            background: white;
+            color: black;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-weight: bold;
+            
+            width: 75px;
+            height: 110px;
+            font-size: 28px;
+            
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            
+            box-sizing: border-box;
+            
+            opacity: 0;
+            transform: translateY(-50px) scale(0.5);
+            animation: dealCard 0.4s forwards ease-out;
+            /* Transición fluida para el efecto de volteo y elevación */
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Ajustar tamaño de carta en las columnas */
+        .column .card {
+            width: 110px;
+            height: 155px;
+            font-size: 40px;
+            display: flex;
+            margin: 10px auto;
+        }
+
+        @keyframes dealCard {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Animación para cuando se mezcla el mazo */
+        .shuffling {
+            animation: shuffleEffect 0.15s infinite alternate !important;
+        }
+
+        @keyframes shuffleEffect {
+            0% { transform: translate(3px, 3px) rotate(2deg) scale(0.95); opacity: 0.6; }
+            100% { transform: translate(-3px, -3px) rotate(-2deg) scale(1.05); opacity: 0.9; }
+        }
+
+        /* NUEVO EFECTO: CARTAS VOLTEADAS (BOCA ABAJO) */
+        .card.face-down {
+            background: #b80c24 !important; /* Reverso rojo */
+            background-image: radial-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 0) !important;
+            background-size: 8px 8px !important;
+            border: 3px solid #ffffff;
+            color: transparent !important; /* Oculta el número y figura */
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* ELEVACIÓN Y GIRO DE LA CARTA MÁGICA */
+        .card.final-magic-lift {
+            background: white !important;
+            opacity: 1 !important;
+            transform: scale(1.3) translateY(-20px) rotateY(360deg); /* Giro y aumento */
+            box-shadow: 0 0 30px #ffbc42, 0 12px 25px rgba(0,0,0,0.7);
+            z-index: 10;
+            border: 2px solid #ffbc42;
+        }
+
+        .red { color: #d90429; }
+        .black { color: #2b2d42; }
+        .hidden { display: none; }
+
+        /* Ajustes para pantallas pequeñas */
+        @media (max-width: 768px) {
+            .deck-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .column {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔮 El Truco de las 27 Cartas 🔮</h1>
+    <hr>
+
+    <!-- PASO 1: Elegir Posición -->
+    <div id="step-1">
+        <p>Seleccione la posición final (del 1 al 27) en la que desea que aparezca la carta misteriosa:</p>
+        <input type="number" id="target-pos" min="1" max="27" value="11" style="font-size: 18px; padding: 8px; width: 60px; text-align: center; border-radius: 5px;">
+        <br><br>
+        <button onclick="startMagic()">Comenzar el Ilusionismo</button>
+    </div>
+
+    <!-- PASO 2: Elegir Carta -->
+    <div id="step-2" class="hidden">
+        <p id="step2-instruction"><strong>Paso 1:</strong> Observe las cartas a continuación, <strong>elija una mentalmente</strong> y memorícela. No la revele a nadie.</p>
+        
+        <div id="main-deck-grid" class="deck-grid"></div>
+        
+        <br>
+        <button id="btn-memorized" onclick="shuffleAndProceed()">Carta memorizada, continuar</button>
+    </div>
+
+    <!-- PASO 3: Los Repartos -->
+    <div id="step-3" class="hidden">
+        <p id="deal-instruction">Reparto 1 de 3: Seleccione la <strong>COLUMNA</strong> donde se encuentra la carta elegida.</p>
+        <div class="columns-container">
+            <div class="column" onclick="selectColumn(0)">
+                <h3>Columna A</h3>
+                <div id="col-0"></div>
+            </div>
+            <div class="column" onclick="selectColumn(1)">
+                <h3>Columna B</h3>
+                <div id="col-1"></div>
+            </div>
+            <div class="column" onclick="selectColumn(2)">
+                <h3>Columna C</h3>
+                <div id="col-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 4: Revelación Final -->
+    <div id="step-4" class="hidden">
+        <h2>✨ ¡La magia se ha completado! ✨</h2>
+        <p id="final-message">El mazo se ha ordenado. Tu carta está exactamente en la posición elegida:</p>
+        
+        <!-- Tablero final con las cartas volteadas -->
+        <div id="final-deck-grid" class="deck-grid"></div>
+        
+        <br>
+        <button onclick="resetGame()">Reiniciar juego</button>
+    </div>
+</div>
+
+<script>
+    const suits = [
+        { symbol: '♠', color: 'black' },
+        { symbol: '♥', color: 'red' },
+        { symbol: '♦', color: 'red' },
+        { symbol: '♣', color: 'black' }
+    ];
+    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    
+    let deck = [];
+    let step = 1;
+    let targetPosition = 0;
+    let ternaryDigits = [];
+
+    function createDeck() {
+        let tempDeck = [];
+        let count = 0;
+        for (let v of values) {
+            for (let s of suits) {
+                if (count < 27) {
+                    tempDeck.push({ val: v, suit: s.symbol, color: s.color });
+                    count++;
+                }
+            }
+        }
+        return tempDeck;
+    }
+
+    function startMagic() {
+        const posInput = document.getElementById('target-pos').value;
+        targetPosition = parseInt(posInput);
+        if (targetPosition < 1 || targetPosition > 27 || isNaN(targetPosition)) {
+            alert("Por favor introduzca un número válido entre 1 y 27.");
+            return;
+        }
+
+        let m = targetPosition - 1;
+        ternaryDigits = [];
+        for (let i = 0; i < 3; i++) {
+            ternaryDigits.push(m % 3);
+            m = Math.floor(m / 3);
+        }
+
+        deck = createDeck();
+        renderInitialDeck();
+
+        document.getElementById('step-1').classList.add('hidden');
+        document.getElementById('step-2').classList.remove('hidden');
+        document.getElementById('step2-instruction').innerHTML = "<strong>Paso 1:</strong> Observe las cartas a continuación, <strong>elija una mentalmente</strong> y memorícela. No la revele a nadie.";
+        document.getElementById('btn-memorized').style.display = 'inline-block';
+    }
+
+    function renderInitialDeck() {
+        const grid = document.getElementById('main-deck-grid');
+        grid.innerHTML = '';
+        
+        deck.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = `card ${card.color}`;
+            cardEl.style.animationDelay = `${index * 0.02}s`;
+            cardEl.innerHTML = `${card.val}${card.suit}`;
+            grid.appendChild(cardEl);
+        });
+    }
+
+    function shuffleAndProceed() {
+        const cards = document.querySelectorAll('#main-deck-grid .card');
+        document.getElementById('step2-instruction').innerHTML = "🔮 <strong>¡Mezclando y perdiendo tu carta en el mazo!...</strong> 🔮";
+        document.getElementById('btn-memorized').style.display = 'none';
+
+        cards.forEach(card => {
+            card.classList.add('shuffling');
+            card.style.animationDelay = '0s';
+        });
+
+        setTimeout(() => {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.remove('hidden');
+            step = 1;
+            renderColumns();
+        }, 1500);
+    }
+
+    let colA = [], colB = [], colC = [];
+
+    function renderColumns() {
+        document.getElementById('deal-instruction').innerHTML = `Reparto <strong>${step} de 3</strong>: Haga clic o presione sobre la <strong>COLUMNA</strong> donde se encuentra la carta pensada.`;
+        
+        colA = []; colB = []; colC = [];
+        
+        for (let i = 0; i < deck.length; i++) {
+            if (i % 3 === 0) colA.push(deck[i]);
+            if (i % 3 === 1) colB.push(deck[i]);
+            if (i % 3 === 2) colC.push(deck[i]);
+        }
+
+        renderColumnHTML('col-0', colA);
+        renderColumnHTML('col-1', colB);
+        renderColumnHTML('col-2', colC);
+    }
+
+    function renderColumnHTML(id, columnCards) {
+        const div = document.getElementById(id);
+        div.innerHTML = '';
+        
+        columnCards.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = `card ${card.color}`;
+            cardEl.style.animationDelay = `${index * 0.05}s`;
+            cardEl.innerHTML = `${card.val}${card.suit}`;
+            div.appendChild(cardEl);
+        });
+    }
+
+    function selectColumn(chosenIndex) {
+        let columns = [colA, colB, colC];
+        let chosen = columns[chosenIndex];
+        
+        columns.splice(chosenIndex, 1);
+        let other1 = columns[0];
+        let other2 = columns[1];
+
+        let currentPlacement = ternaryDigits[step - 1];
+
+        let newDeck = [];
+        if (currentPlacement === 0) {
+            newDeck = [...chosen, ...other1, ...other2];
+        } else if (currentPlacement === 1) {
+            newDeck = [...other1, ...chosen, ...other2];
+        } else {
+            newDeck = [...other1, ...other2, ...chosen];
+        }
+
+        deck = newDeck;
+
+        if (step < 3) {
+            step++;
+            renderColumns();
+        } else {
+            revealCard();
+        }
+    }
+
+    function revealCard() {
+        document.getElementById('step-3').classList.add('hidden');
+        document.getElementById('step-4').classList.remove('hidden');
+        
+        document.getElementById('final-message').innerHTML = `El mazo se ha ordenado. ¡Tu carta está en la posición <strong>N° ${targetPosition}</strong>!`;
+
+        const finalGrid = document.getElementById('final-deck-grid');
+        finalGrid.innerHTML = '';
+
+        // Renderizamos las 27 cartas completas BOCA ABAJO inicialmente
+        deck.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            // Agregamos la clase 'face-down' a todas
+            cardEl.className = `card ${card.color} face-down`;
+            cardEl.style.animationDelay = `${index * 0.01}s`;
+            cardEl.innerHTML = `${card.val}${card.suit}`;
+            finalGrid.appendChild(cardEl);
+
+            // Pausa dramática de 1.2 segundos para revelar SOLO la elegida
+            setTimeout(() => {
+                if (index === (targetPosition - 1)) {
+                    cardEl.classList.remove('face-down'); // Quita el reverso rojo
+                    cardEl.classList.add('final-magic-lift'); // Hace el giro y la levanta
+                }
+            }, 1200);
+        });
+    }
+
+    function resetGame() {
+        document.getElementById('step-4').classList.add('hidden');
+        document.getElementById('step-1').classList.remove('hidden');
+        document.getElementById('target-pos').value = "11";
+    }
+</script>
+
+</body>
+</html>
